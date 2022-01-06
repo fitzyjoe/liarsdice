@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+wrapper {
+    gradleVersion = '7.2'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task(runGame, dependsOn: 'classes', type: JavaExec) {
+    mainClass = 'com.shuttersky.liarsdice.GameServer'
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty "player0", "com.shuttersky.liarsdice.players.PlayerTruthful"
+    systemProperty "player1", "com.shuttersky.liarsdice.players.PlayerSwing"
+    systemProperty "timeout", 30
+}
+
+task(viewGame, dependsOn: 'classes', type: JavaExec) {
+    mainClass = 'com.shuttersky.liarsdice.GameViewer'
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty "player0", "com.shuttersky.liarsdice.players.PlayerTruthful"
+    systemProperty "player1", "com.shuttersky.liarsdice.players.PlayerSwing"
+    systemProperty "timeout", 30
+}

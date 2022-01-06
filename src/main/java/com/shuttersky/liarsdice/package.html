@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+    <head>
+        <title>com.shuttersky.liarsdice</title>
+    </head>
+    <body bgcolor="white">
+        
+        <h2>Liar's Dice</h2>
+
+        Sections:
+        <ul>
+            <li>House rules for a real-life game
+            <li>Computer adaptation of the rules
+            <li>How to run the game
+            <li>Related info
+            <li>Development history
+            <li>License
+        </ul>
+
+        
+        <h3>House rules for a real-life game</h3>
+        
+        <ol>
+            <li>Each player is given 5 dice and a cup.
+            <li>Each player rolls 1 dice, and the lowest roller bids first.
+            <li>Each player shakes their dice and the first bidder bids.<br>
+            <ul>
+                <li>A quantity of dice
+                <li>A dots value
+            </ul>
+            For example the bid might be "three fours."  This bid encompasses all of the players' dice.
+            In other words this bid means that among all of the players in the game, the bidding player
+            believes that there are "three or more fours" when all players combine their dice.
+            <li>The next player must either bid higher or call b.s.
+            <li>A higher bid would include either
+            <ul>
+                <li>The same quantity and a higher dots value; or
+                <li>A higher quantity and any dots value.
+            </ul>
+            <li>A player calls b.s. by lifting up their cup.  All players lift their cups, and the showdown is decided.
+            <li>The loser of the showdown loses one of their dice and displays it in front of them for counting purposes.
+            <li>Play continues with a bid from the person to the left of the loser.
+            <li>A player with no dice left is eliminated from the game.
+            <li>The game ends when there is one player left.
+            <li>If a roll includes stacked dice, the player lifts their cup to reveal the stack, and then re-rolls all dice.
+        </ol>
+        
+        <h3>Computer adaptation of the rules</h3>
+        
+        The following are differences in the rules based on the computer adaptation:
+        <ul>
+            <li>The player indicated by property "player0" bids first.</li>
+            <li>If a player returns an invalid bid, they lose a die.</li>
+            <li>A player can only take a specified number of seconds to respond to a getBid request.</li>
+        </ul>
+        
+        <h3>How to run the game</h3>
+        Currently this game runs under Java 1.5 or better.
+        If you run it on the command line, you should use the ant script <code>(ant playgame)</code> or do something like this:<p>
+        
+        <code>java -cp lib/liarsdice.jar;lib/sampleplayers.jar;lib/swing-layout-1.0.2.jar<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-Dplayer0=<i>YourFirstPlayerClassName</i><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-Dplayer1=<i>YourSecondPlayerClassName</i><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-Dplayer<i>n</i>=<i>YourNthPlayerClassName</i><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ -Ddebuglevel=<i>FINEST, FINER, FINE, CONFIG, INFO, WARNING, SEVERE</i> ]<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ -Dtimeout=<i>number of seconds</i> ]<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ -Dnumgames=<i>number of games</i> ]<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;com.shuttersky.liarsdice.GameServer</code><p>
+        
+        Included in the liarsdice.jar is a GUI player that you can use to play against the computer players.
+        To use the GUI, specify this class as one of the players: <code>com.shuttersky.liarsdice.players.PlayerSwing</code><p>
+        
+        A debug log named <code>debug.log</code> is maintained.  
+        Also, at the end of the game, the details of the game are serialized to another file called <code>game[gamenum].log</code>.
+        To review the events of the game, run the game viewer with the ant script <code>(ant viewgame)</code> or like this:<p>
+        
+        <code>java -cp lib/liarsdice.jar;lib/sampleplayers.jar;lib/swing-layout-1.0.2.jar com.shuttersky.liarsdice.GameViewer</code><p>
+        
+        The first thing you see is a file open dialog.  Browse to the working directory and select a game log to view the results of that game.<p>    
+            
+        <h3>Related info</h3>
+        
+        For more external info check out the following:
+        <ul>
+            <li><a target="_blank" href="http://www.google.com/search?hl=en&ie=UTF-8&oe=UTF-8&q=%22liar%27s+dice%22">Google: liar's dice</a></li>
+        </ul>
+
+        <h3>Development history</h3>
+        
+        10/13/2002<br>
+        Liar's Dice was written to serve as a programming contest, allowing each player to develop their own Player
+        Class that is used by the GameServer to pit against each other.  At this point the intent is to play computer
+        against computer, but in the future it may be adapted to fit a user
+        interface.<P>
+        
+        11/05/2002<br>
+        PlayerSwing class created.  When this player is included, a UI allows interactive play with 
+        other computer Player classes.<P>
+        
+        07/12/2007<br>
+        Updated code with Java 1.5 features.  Lots of improvements.  Added game viewer.<P>
+        
+        01/06/2022<br>
+        Updated for Java 17
+        Moved from ant to gradle
+        Moved from NetBeans to IntelliJ
+        
+    </body>
+</html>
