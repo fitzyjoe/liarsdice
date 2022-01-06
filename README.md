@@ -72,7 +72,11 @@ Liar's Dice was written to serve as a programming contest, allowing each player 
 PlayerSwing class created. When this player is included, a UI allows interactive play with other computer Player classes.
 
 07/12/2007  
-Updated code with Java 1.5 features. Lots of improvements. Added game viewer.
+Updated code with Java 1.5 features. 
+Lots of improvements. 
+Added game viewer.
 
 01/06/2022  
-Updated for Java 17 Moved from ant to gradle Moved from NetBeans to IntelliJ
+Updated for Java 17
+Moved from ant to gradle
+Moved from NetBeans to IntelliJ
