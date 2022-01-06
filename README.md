@@ -38,20 +38,22 @@ The following are differences in the rules based on the computer adaptation:
 
 ### How to run the game
 
-Currently this game runs under Java 1.5 or better. If you run it on the command line, you should use the ant script `(ant playgame)` or do something like this:
+Currently this game runs under Java 1.5 or better. If you run it on the command line, you should use the gradle script `(gradlew playgame)` or do something like this:
 
-`java -cp lib/liarsdice.jar;lib/sampleplayers.jar;lib/swing-layout-1.0.2.jar  
+```
+java -cp lib/liarsdice.jar;lib/sampleplayers.jar;lib/swing-layout-1.0.2.jar  
      -Dplayer0=_YourFirstPlayerClassName_  
      -Dplayer1=_YourSecondPlayerClassName_  
      -Dplayer_n_=_YourNthPlayerClassName_  
      [ -Ddebuglevel=_FINEST, FINER, FINE, CONFIG, INFO, WARNING, SEVERE_ ]  
      [ -Dtimeout=_number of seconds_ ]  
      [ -Dnumgames=_number of games_ ]  
-     com.shuttersky.liarsdice.GameServer`
+     com.shuttersky.liarsdice.GameServer
+```
 
 Included in the liarsdice.jar is a GUI player that you can use to play against the computer players. To use the GUI, specify this class as one of the players: `com.shuttersky.liarsdice.players.PlayerSwing`
 
-A debug log named `debug.log` is maintained. Also, at the end of the game, the details of the game are serialized to another file called `game[gamenum].log`. To review the events of the game, run the game viewer with the ant script `(ant viewgame)` or like this:
+A debug log named `debug.log` is maintained. Also, at the end of the game, the details of the game are serialized to another file called `game[gamenum].log`. To review the events of the game, run the game viewer with the gradle script `(gradlew viewgame)` or like this:
 
 `java -cp lib/liarsdice.jar;lib/sampleplayers.jar;lib/swing-layout-1.0.2.jar com.shuttersky.liarsdice.GameViewer`
 
