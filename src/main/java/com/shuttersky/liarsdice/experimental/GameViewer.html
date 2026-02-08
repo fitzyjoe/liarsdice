@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Liar's Dice Game Viewer</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Rowdies:wght@300;400&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="gameviewer.css">
+
+        <script>
+          var gamestate;
+
+          window.onload = function () {
+            init();
+          };
+
+          function initUI(gamestate)
+          {
+            const playersElement = document.getElementById("players");
+            const playerSimpleClassNames = gamestate[0].playerSimpleClassNames;
+            for (let i = 0; i < playerSimpleClassNames.length; i++)
+            {
+              const playerElement = document.createElement("div");
+              playerElement.id = "player" + i;
+              playerElement.className = "player";
+              playersElement.appendChild(playerElement);
+
+              const playerName = document.createElement("div");
+              playerName.className = "player-name";
+              playerName.id = "player-name-" + i;
+              playerElement.appendChild(playerName);
+              playerName.innerHTML = playerSimpleClassNames[i];
+
+              const playerDice = document.createElement("div");
+              playerDice.className = "player-dice";
+              playerDice.id = "player-dice-" + i;
+              playerElement.appendChild(playerDice);
+
+              const dice = gamestate[0].cups[i].dice;
+              for (let d = 0; d < dice.length; d++)
+              {
+                const diceimg = document.createElement("img");
+                diceimg.src = "./resources/dice" + dice[d].dots + ".png";
+                diceimg.className = "die";
+                playerDice.appendChild(diceimg);
+              }
+
+              const playerBid = document.createElement("div");
+              playerBid.className = "player-bid";
+              playerBid.id = "player-bid-" + i;
+              playerElement.appendChild(playerBid);
+              playerBid.innerHTML = "some bid";
+            }
+          }
+
+          function init()
+          {
+            const fileInput = document.getElementById('logfileinput');
+            fileInput.onchange = () => {
+              const selectedFile = fileInput.files[0];
+              console.log(selectedFile);
+
+              const reader = new FileReader();
+              reader.addEventListener('load', (event) => {
+                const contents = event.target.result;
+                gamestate = JSON.parse(contents);
+                initUI(gamestate);
+              });
+
+              reader.readAsText(selectedFile);
+            }
+          }
+
+
+        </script>
+    </head>
+    <body style="background-image: url('./resources/green_felt.jpg'); margin: 30px; font-family: 'Rowdies', cursive; color: #cccccc;">
+
+        <div style="font-size: 30px; margin-bottom: 30px;">Liar's Dice Viewer</div>
+        <div style="font-size: 20px; font-weight: lighter; margin-bottom: 10px;">Load a log file to begin</div>
+        <form>
+            <input type="file" id="logfileinput" accept=".json">
+        </form>
+        <div id="stats"></div>
+        <div id="players"></div>
+    </body>
+</html>

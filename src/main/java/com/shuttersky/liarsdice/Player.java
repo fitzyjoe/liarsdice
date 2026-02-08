@@ -1,6 +1,4 @@
-
 package com.shuttersky.liarsdice;
-
 
 /**
  * Players will extend this class to implement their own logic to formulate a bid.
@@ -23,14 +21,12 @@ public interface Player
      */
     public abstract Bid getBid(RoundState rs, Cup cup);
 
-
     /**
      * The GameServer will call this every time a player bids.
      *
      * @param rs RoundState capturing the state of the table for this round.
      */
     public abstract void tellBid(RoundState rs);
-
 
     /**
      * The GameServer tells each player of the outcome of a showdown.
@@ -40,5 +36,4 @@ public interface Player
      * @param sLoserClassName  String representing the class name of the showdown loser.
      */
     public abstract void tellOutcome(RoundState rs, String sWinnerClassName, String sLoserClassName);
-
 }

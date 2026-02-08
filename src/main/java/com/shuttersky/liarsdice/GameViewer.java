@@ -7,6 +7,7 @@ package com.shuttersky.liarsdice;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
@@ -24,9 +25,9 @@ public class GameViewer extends javax.swing.JFrame implements ActionListener
      */
     public static final long serialVersionUID = 1;
 
-    private static final int PLAYER_0_TOP = 200;
+    private static final int PLAYER_0_TOP = 190;
 
-    private static final int PLAYER_HEIGHT = 74;
+    private static final int PLAYER_HEIGHT = 55;
 
     private static final Color COLOR_DISABLED = new java.awt.Color(153, 153, 153);
 
@@ -54,7 +55,7 @@ public class GameViewer extends javax.swing.JFrame implements ActionListener
     public GameViewer()
     {
         // open a file for viewing
-        String selectedFile = selectLogFile();
+        File selectedFile = selectLogFile();
 
         // load the Game State
         try
@@ -125,11 +126,9 @@ public class GameViewer extends javax.swing.JFrame implements ActionListener
 
                 // resize the window
                 gv.setHeightForPlayers(gv._gameState.getNumPlayers());
-
                 gv.setVisible(true);
 
                 return;
-
             }
         });
     }
@@ -137,7 +136,7 @@ public class GameViewer extends javax.swing.JFrame implements ActionListener
     /**
      * Serialize the GameState to a file
      */
-    private static final GameState loadGameState(String selectedLogFile) throws Exception
+    private static final GameState loadGameState(File selectedLogFile) throws Exception
     {
         // open file
         FileInputStream fis = null;
@@ -214,31 +213,25 @@ public class GameViewer extends javax.swing.JFrame implements ActionListener
 
     private void enablePlayer(int playerIndex)
     {
-        try
-        {
-            // get the UI elements that we need to disable
-            PlayerUI playerUI = _playerUI.get(playerIndex);
+        // get the UI elements that we need to disable
+        PlayerUI playerUI = _playerUI.get(playerIndex);
 
-            // the requested player's class name
-            String playerName = _gameState.get(0).getPlayerSimpleClassName(playerIndex);
+        // the requested player's class name
+        String playerName = _gameState.get(0).getPlayerSimpleClassName(playerIndex);
 
-            // the current bidder's class name
-            String bidPlayerName = _gameState.get(_roundIndex).getBid(_bidIndex).getPlayerSimpleClassName();
+        // the current bidder's class name
+        String bidPlayerName = _gameState.get(_roundIndex).getBid(_bidIndex).getPlayerSimpleClassName();
 
-            int currentPlayerIndex = _gameState.getPlayerIndex(bidPlayerName);
+        int currentPlayerIndex = _gameState.getPlayerIndex(bidPlayerName);
 
 
-            Color borderColor = (playerIndex == currentPlayerIndex) ? COLOR_HIGHLIGHTED : COLOR_ENABLED;
+        Color borderColor = (playerIndex == currentPlayerIndex) ? COLOR_HIGHLIGHTED : COLOR_ENABLED;
 
-            playerUI.getPanelPlayer().setBorder(javax.swing.BorderFactory.createTitledBorder(null, playerName, javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, DEFAULT_FONT, borderColor));
-            playerUI.getLabelCup().setForeground(COLOR_ENABLED);
-            playerUI.getLabelPlayerCup().setForeground(COLOR_ENABLED);
-            playerUI.getLabelBid().setForeground(COLOR_ENABLED);
-            playerUI.getLabelPlayerBid().setForeground(borderColor);
-        }
-        catch (Exception e)
-        {
-        }
+        playerUI.getPanelPlayer().setBorder(javax.swing.BorderFactory.createTitledBorder(null, playerName, javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, DEFAULT_FONT, borderColor));
+        playerUI.getLabelCup().setForeground(COLOR_ENABLED);
+        playerUI.getLabelPlayerCup().setForeground(COLOR_ENABLED);
+        playerUI.getLabelBid().setForeground(COLOR_ENABLED);
+        playerUI.getLabelPlayerBid().setForeground(borderColor);
     }
 
     private void setHeightForPlayers(int numPlayers)
@@ -308,7 +301,7 @@ public class GameViewer extends javax.swing.JFrame implements ActionListener
     }
      */
 
-    private String selectLogFile()
+    private File selectLogFile()
     {
         JFileChooser chooser = new JFileChooser();
         LogFileFilter filter = new LogFileFilter();
@@ -321,12 +314,12 @@ public class GameViewer extends javax.swing.JFrame implements ActionListener
             System.exit(-1);
         }
 
-        return chooser.getSelectedFile().getName();
+        return chooser.getSelectedFile();
     }
 
     private void updateUI()
     {
-        // show the breakdown of all of the dice
+        // show the breakdown of all the dice
         java.util.List<String> playerNames = _gameState.get(_roundIndex).getPlayerSimpleClassNames();
         String bidAnalysis = null;
 
@@ -430,7 +423,7 @@ public class GameViewer extends javax.swing.JFrame implements ActionListener
 
             playerUI.getLabelPlayerBid().setText(bid.toString() + bidAnalysis);
 
-            // udpate trash talk
+            // update trash talk
             labelStatsTrashTalk.setText(bid.getMessage());
         }
         catch (Exception e)

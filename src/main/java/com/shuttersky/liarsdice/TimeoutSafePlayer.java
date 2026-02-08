@@ -32,11 +32,10 @@ class TimeoutSafePlayer implements com.shuttersky.liarsdice.Player
      * @throws java.lang.Exception if the timeout seconds is negative
      */
     TimeoutSafePlayer(Player player, int timeoutSeconds)
-        throws Exception
     {
         if (timeoutSeconds < MIN_TIMEOUT_SECONDS)
         {
-            throw new Exception("TimeoutSafePlayer constuctor exception.  timeoutSeconds less than minimum bounds");
+            throw new RuntimeException("TimeoutSafePlayer constuctor exception.  timeoutSeconds less than minimum bounds");
         }
 
         this._playerCaller = new PlayerCaller(player);

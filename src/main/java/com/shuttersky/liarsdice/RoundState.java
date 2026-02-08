@@ -21,25 +21,25 @@ public class RoundState implements java.io.Serializable
      * Player class name and number of dice are added to this list
      * in bid order starting with the first bid at index 0.
      */
-    private ArrayList<String> _playerSimpleClassName = null;
-    private ArrayList<Integer> _numDice = null;
-    private ArrayList<Bid> _bids = null;
-    private ArrayList<Cup> _cups = null;
+    final private ArrayList<String> playerSimpleClassNames;
+    final private ArrayList<Integer> numDice;
+    final private ArrayList<Bid> bids;
+    final private ArrayList<Cup> cups;
 
-    private boolean _isShowdownOver = false;
+    private int numDiceTotal;
+    private boolean isShowdownOver;
 
     /**
      * constructor
      */
     public RoundState()
     {
-        _playerSimpleClassName = new ArrayList<String>();
-        _numDice = new ArrayList<Integer>();
-        _bids = new ArrayList<Bid>();
-        _cups = new ArrayList<Cup>();
-        _isShowdownOver = false;
+        playerSimpleClassNames = new ArrayList<>();
+        numDice = new ArrayList<>();
+        bids = new ArrayList<>();
+        cups = new ArrayList<>();
+        isShowdownOver = false;
     }
-
 
     /**
      * Tells how many players are in this round.
@@ -48,7 +48,7 @@ public class RoundState implements java.io.Serializable
      */
     public int getNumPlayers()
     {
-        return _playerSimpleClassName.size();
+        return playerSimpleClassNames.size();
     }
 
     /**
@@ -56,22 +56,19 @@ public class RoundState implements java.io.Serializable
      *
      * @param simpleClassName String simple class name of a player
      * @return the index of the player
-     * @throws Exception if the player is not found in this round
+     * @throws RuntimeException if the player is not found in this round
      */
-    public int getPlayerIndex(String simpleClassName) throws Exception
+    public int getPlayerIndex(String simpleClassName)
     {
-        int index = 0;
-
-        index = _playerSimpleClassName.indexOf(simpleClassName);
+        final var index = playerSimpleClassNames.indexOf(simpleClassName);
 
         if (index == -1)
         {
-            throw new Exception();
+            throw new RuntimeException();
         }
 
         return index;
     }
-
 
     /**
      * Get the simpleClassName of the player at <code>index</code> seat at the table.
@@ -90,9 +87,8 @@ public class RoundState implements java.io.Serializable
     {
         index %= getNumPlayers();
 
-        return _playerSimpleClassName.get(index);
+        return playerSimpleClassNames.get(index);
     }
-
 
     /**
      * Allow a player to have read-only access to a list of player class names
@@ -106,9 +102,8 @@ public class RoundState implements java.io.Serializable
      */
     public List<String> getPlayerSimpleClassNames()
     {
-        return Collections.unmodifiableList(_playerSimpleClassName);
+        return Collections.unmodifiableList(playerSimpleClassNames);
     }
-
 
     /**
      * tells how many bids have been submitted for this round.
@@ -117,9 +112,8 @@ public class RoundState implements java.io.Serializable
      */
     public int getNumBids()
     {
-        return _bids.size();
+        return bids.size();
     }
-
 
     /**
      * Get the bid that was submitted in index order.
@@ -127,19 +121,18 @@ public class RoundState implements java.io.Serializable
      * @param index ranging from 0 to <code>getNumBids()</code>-1 submitted for this round.
      *              0 would be considered to be the first bid.
      * @return Bid that was submitted at index order
-     * @throws Exception if index is out of range.
+     * @throws RuntimeException if index is out of range.
      */
-    public Bid getBid(int index) throws Exception
+    public Bid getBid(int index)
     {
         // index out of range
         if (index < 0 || index > getNumBids() - 1)
         {
-            throw new Exception("index " + index + " is out of range in getBid");
+            throw new RuntimeException("index " + index + " is out of range in getBid");
         }
 
-        return new Bid(_bids.get(index));
+        return new Bid(bids.get(index));
     }
-
 
     /**
      * Allow a player to have read-only access to a list of bids.
@@ -148,9 +141,8 @@ public class RoundState implements java.io.Serializable
      */
     public List<Bid> getBids()
     {
-        return Collections.unmodifiableList(_bids);
+        return Collections.unmodifiableList(bids);
     }
-
 
     /**
      * returns the highest (most recent) bid.
@@ -163,16 +155,16 @@ public class RoundState implements java.io.Serializable
     {
         GameServer.logger.entering("RoundState", "getHighestBid");
 
-        Bid bid = null;
+        Bid bid;
 
-        if (_bids.size() == 0)
+        if (bids.size() == 0)
         {
             return null;
         }
 
         try
         {
-            bid = _bids.get(_bids.size() - 1);
+            bid = bids.get(bids.size() - 1);
         }
         catch (java.util.NoSuchElementException e)
         {
@@ -182,7 +174,6 @@ public class RoundState implements java.io.Serializable
 
         return new Bid(bid);
     }
-
 
     /**
      * Get the number of dice for the player at <code>index</code>.
@@ -197,7 +188,7 @@ public class RoundState implements java.io.Serializable
         // mod the index to keep it in bounds
         index %= getNumPlayers();
 
-        return _numDice.get(index).intValue();
+        return numDice.get(index).intValue();
     }
 
     /**
@@ -207,9 +198,8 @@ public class RoundState implements java.io.Serializable
      */
     public List<Integer> getNumDice()
     {
-        return Collections.unmodifiableList(_numDice);
+        return Collections.unmodifiableList(numDice);
     }
-
 
     /**
      * Get the number of dice for the player requested.
@@ -217,23 +207,19 @@ public class RoundState implements java.io.Serializable
      * @param simpleClassName String representing the simpleClassName of a player class
      * @return int representing the number of dice that <code>simpleClassName</code>
      * has for the current round.
-     * @throws Exception if <code>simpleClassName</code> is not currently playing.
+     * @throws RuntimeException if <code>simpleClassName</code> is not currently playing.
      */
     public int getNumDice(String simpleClassName)
-        throws Exception
     {
-        int index = 0;
-
-        index = _playerSimpleClassName.indexOf(simpleClassName);
+        int index = playerSimpleClassNames.indexOf(simpleClassName);
 
         if (index == -1)
         {
-            throw new Exception();
+            throw new RuntimeException(simpleClassName + " not found in current round");
         }
 
-        return _numDice.get(index).intValue();
+        return numDice.get(index).intValue();
     }
-
 
     /**
      * tells the number of dice remaining for this round.
@@ -242,14 +228,7 @@ public class RoundState implements java.io.Serializable
      */
     public int getNumDiceTotal()
     {
-        Integer intobjNumDice = Integer.valueOf(0);
-
-        for (Integer numDice : _numDice)
-        {
-            intobjNumDice += numDice;
-        }
-
-        return intobjNumDice.intValue();
+        return numDiceTotal;
     }
 
     /**
@@ -260,35 +239,35 @@ public class RoundState implements java.io.Serializable
      *              considered to be the first player and the index is modulo by the number
      *              of players so that this index may be the same as the bid index.
      * @return a copy of the cup for the player at <code>index</code> seat.
-     * @throws Exception if this method is called before the showdown.
+     * @throws RuntimeException if this method is called before the showdown.
      */
-    public Cup getCup(int index) throws Exception
+    public Cup getCup(int index)
     {
-        if (_isShowdownOver == false)
+        if (!isShowdownOver)
         {
-            throw new Exception("attpempted to access a cup before the end of the showdown");
+            throw new RuntimeException("attempted to access a cup before the end of the showdown");
         }
 
         // mod the index to keep it in bounds
         index %= getNumPlayers();
 
-        return new Cup(_cups.get(index));
+        return new Cup(cups.get(index));
     }
 
     /**
      * Once the showdown is over, allow a player to have read-only access to a list of Cups.
      *
      * @return List&lt;Cup&gt; of Cups for each player.
-     * @throws Exception if this method is called before the showdown
+     * @throws RuntimeException if this method is called before the showdown
      */
-    public List<Cup> getCups() throws Exception
+    public List<Cup> getCups()
     {
-        if (_isShowdownOver == false)
+        if (!isShowdownOver)
         {
-            throw new Exception("attpempted to access a cup before the end of the showdown");
+            throw new RuntimeException("attempted to access a cup before the end of the showdown");
         }
 
-        return Collections.unmodifiableList(_cups);
+        return Collections.unmodifiableList(cups);
     }
 
     /**
@@ -297,83 +276,63 @@ public class RoundState implements java.io.Serializable
      * @param simpleClassName String representing the simpleClassName of a player class
      * @return Cup representing the cup of dice that <code>simpleClassName</code>
      * has for the current round.
-     * @throws Exception if <code>simpleClassName</code> is not currently playing
+     * @throws RuntimeException if <code>simpleClassName</code> is not currently playing
      *                   or if this method is called before the showdown
      */
-    public Cup getCup(String simpleClassName) throws Exception
+    public Cup getCup(String simpleClassName)
     {
-        int index = 0;
-
-        if (_isShowdownOver == false)
+        if (!isShowdownOver)
         {
-            throw new Exception("attpempted to access a cup before the end of the showdown");
+            throw new RuntimeException("attempted to access a cup before the end of the showdown");
         }
 
-        index = _playerSimpleClassName.indexOf(simpleClassName);
+        var index = playerSimpleClassNames.indexOf(simpleClassName);
 
         if (index == -1)
         {
-            throw new Exception();
+            throw new RuntimeException(simpleClassName + " player not found in current round");
         }
 
-        return new Cup(_cups.get(index));
+        return new Cup(cups.get(index));
     }
-
 
     /*
      * String representation of a RoundState.
      *
      * @return String representation of a RoundState.
      */
+    @Override
     public String toString()
     {
-        StringBuffer sReturn = new StringBuffer();
+        final var sb = new StringBuffer();
         int index = 0;
-        Integer intobjNumDice = null;
 
-        sReturn.append("PLAYERS\n");
+        sb.append("PLAYERS\n");
 
         while (index < getNumPlayers())
         {
-            sReturn.append(_playerSimpleClassName.get(index));
-            sReturn.append(" has ");
-
-            try
-            {
-                intobjNumDice = _numDice.get(index);
-            }
-            catch (ArrayIndexOutOfBoundsException e)
-            {
-                // this will never happen because we are doing a mod
-            }
-
-            sReturn.append(intobjNumDice.toString());
-            sReturn.append(" dice\n");
+            sb.append(playerSimpleClassNames.get(index));
+            sb.append(" has ");
+            var intobjNumDice = numDice.get(index);
+            sb.append(intobjNumDice.toString());
+            sb.append(" dice\n");
             index++;
         }
 
-        sReturn.append("BID HISTORY\n");
+        sb.append("BID HISTORY\n");
 
         index = 0;
         while (index < getNumBids())
         {
-            try
-            {
-                sReturn.append(_bids.get(index).getPlayerSimpleClassName());
-                sReturn.append("\t");
-                sReturn.append(_bids.get(index));
-            }
-            catch (Exception e)
-            {
-                // this will never happen
-            }
-            sReturn.append("\n");
+            sb.append(bids.get(index).getPlayerSimpleClassName());
+            sb.append("\t");
+            sb.append(bids.get(index));
+            sb.append("\n");
             index++;
         }
 
-        return sReturn.toString();
+        return sb.toString();
     }
-
 
     /**
      * The GameServer uses this to initialize the state of the round.
@@ -387,10 +346,11 @@ public class RoundState implements java.io.Serializable
      */
     protected void addPlayerState(final String simpleClassName, final int iNumDice, final Cup cup)
     {
-        _playerSimpleClassName.add(simpleClassName);
-        final Integer intobjNumDice = Integer.valueOf(iNumDice);
-        _numDice.add(intobjNumDice);
-        _cups.add(new Cup(cup));  // make a new one because the gameserver modifies the passed in cup from round to round
+        playerSimpleClassNames.add(simpleClassName);
+        final var intobjNumDice = Integer.valueOf(iNumDice);
+        numDice.add(intobjNumDice);
+        numDiceTotal += iNumDice;
+        cups.add(new Cup(cup));  // make a new one because the gameserver modifies the passed in cup from round to round
     }
 
     /**
@@ -400,7 +360,7 @@ public class RoundState implements java.io.Serializable
      */
     protected void addNextBid(Bid bid)
     {
-        _bids.add(bid);
+        bids.add(bid);
     }
 
     /**
@@ -408,7 +368,7 @@ public class RoundState implements java.io.Serializable
      */
     protected void setShowdownOver()
     {
-        _isShowdownOver = true;
+        isShowdownOver = true;
     }
 
     /**
@@ -417,21 +377,17 @@ public class RoundState implements java.io.Serializable
      * @param simpleClassName String representing the simpleClassName of a player class
      * @return Cup representing the cup of dice that <code>simpleClassName</code>
      * has for the current round.
-     * @throws Exception if <code>simpleClassName</code> is not currently playing
+     * @throws RuntimeException if <code>simpleClassName</code> is not currently playing
      */
-    protected Cup getCupProtected(String simpleClassName) throws Exception
+    protected Cup getCupProtected(String simpleClassName)
     {
-        int index = 0;
-
-        index = _playerSimpleClassName.indexOf(simpleClassName);
+        int index = playerSimpleClassNames.indexOf(simpleClassName);
 
         if (index == -1)
         {
-            throw new Exception();
+            throw new RuntimeException(simpleClassName + " player is not playing in this round");
         }
 
-        return new Cup(_cups.get(index));
+        return new Cup(cups.get(index));
     }
-
 }
-

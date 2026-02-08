@@ -1,6 +1,8 @@
-
 package com.shuttersky.liarsdice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
@@ -10,9 +12,6 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
-import java.util.Formatter;
-import java.util.Locale;
-
 
 /**
  * This class is the meat and potatoes of the liar's dice game.  The purpose
@@ -53,7 +52,7 @@ public class GameServer
     private static final int DEFAULT_TIMEOUT_SECONDS = 1;
 
     /**
-     * the timeout for each player can by configured by defining this property
+     * the timeout for each player can be configured by defining this property
      */
     private static final String PROPERTY_TIMEOUT = "timeout";
 
@@ -67,27 +66,23 @@ public class GameServer
      */
     private static final int DEFAULT_NUMGAMES = 1;
 
-
     /**
      * member variables representing the player classes and their cups.
      */
-    private ArrayList<Player> _players = null;
-    private ArrayList<Cup> _playerCups = null;
-    private RoundState _rs = null;
-    private GameState _gamestate = null;
-    private int _currentPlayer = 0;
-    private int _timeoutSeconds = DEFAULT_TIMEOUT_SECONDS;
-    private int _numGames = DEFAULT_NUMGAMES;
-    private int _currentGameNumber = 0;
+    private ArrayList<Player> players = null;
+    private ArrayList<Cup> playerCups = null;
+    private RoundState rs = null;
+    private GameState gamestate = null;
+    private int currentPlayer = 0;
+    private int timeoutSeconds = DEFAULT_TIMEOUT_SECONDS;
+    private int numGames = DEFAULT_NUMGAMES;
+    private int currentGameNumber = 0;
 
     /**
      * static logger object.  This should be used by all objects in the game.
      */
     public static Logger logger = null;
 
-    /**
-     * this gets executed when the GameServer is instantiated.
-     */
     static
     {
         setupLogger();
@@ -110,7 +105,7 @@ public class GameServer
 
         gs.loadOptions();
 
-        while (gs._currentGameNumber < gs._numGames)
+        while (gs.currentGameNumber < gs.numGames)
         {
             // play the game
             try
@@ -126,7 +121,7 @@ public class GameServer
             try
             {
                 // save the outcome of the game to the debug log
-                gs._gamestate.logResults(gs.getFormattedGameNumber());
+                gs.gamestate.logResults(gs.getFormattedGameNumber());
 
                 // serialize the gamestate for the game viewer
                 gs.saveGameState();
@@ -137,12 +132,11 @@ public class GameServer
                 System.exit(-1);
             }
 
-            gs._currentGameNumber++;
+            gs.currentGameNumber++;
         }
 
         logger.exiting("GameServer", "main");
     }
-
 
     /**
      * Plays one game of liars dice.
@@ -150,7 +144,7 @@ public class GameServer
     private void PlayGame() throws Exception
     {
         // create a gamestate to keep statistics
-        _gamestate = new GameState();
+        gamestate = new GameState();
 
         // load the options and players from the defined properties
         logger.finest("loading players");
@@ -177,10 +171,10 @@ public class GameServer
         }
 
         logger.fine("begin play");
-        logger.finest("number of players: " + _players.size());
+        logger.finest("number of players: " + players.size());
 
         // while there is more than one player
-        while (_players.size() > 1)
+        while (players.size() > 1)
         {
             try
             {
@@ -193,9 +187,8 @@ public class GameServer
             }
         }
 
-        logger.info("The winner is " + (_players.get(0)).getClass().getSimpleName());
+        logger.info("The winner is " + (players.get(0)).getClass().getSimpleName());
     }
-
 
     /**
      * plays one round of liars dice.  A round consists of
@@ -210,18 +203,15 @@ public class GameServer
      */
     private void playRound() throws Exception
     {
-        Bid bid = null;
-        Player player = null;
-        Cup cup = null;
+        Bid bid;
 
         logger.finest("inside playRound()");
 
         // initialize all variables for a new round
-        prepareNewRound(_currentPlayer);
+        prepareNewRound(currentPlayer);
 
         logger.fine("populated roundstate");
-
-        logger.finest("roundstate has " + _rs.getNumPlayers() + " number of players");
+        logger.finest("roundstate has " + rs.getNumPlayers() + " number of players");
 
         // each bid
         do
@@ -229,20 +219,19 @@ public class GameServer
             logger.finest("new bid");
 
             // get the current player and their cup
-            player = _players.get(_currentPlayer);
-            cup = _playerCups.get(_currentPlayer);
+            final var player = players.get(currentPlayer);
+            final var cup = playerCups.get(currentPlayer);
 
             logger.finest("got cup for " + player.getClass().getSimpleName() + " " + cup.toString());
 
             // ask the player for a bid
             try
             {
-                TimeoutSafePlayer tsplayer = new TimeoutSafePlayer(player, _timeoutSeconds);
-                bid = tsplayer.getBid(_rs, new Cup(cup) /* give a tamper-proof copy of their cup */);
+                TimeoutSafePlayer tsplayer = new TimeoutSafePlayer(player, timeoutSeconds);
+                bid = tsplayer.getBid(rs, new Cup(cup) /* give a tamper-proof copy of their cup */);
             }
             catch (Exception e)
             {
-
                 logger.severe("Failed to construct a TimeoutSafePlayer");
                 throw new Exception("Failed to construct a TimeoutSafePlayer", e);
             }
@@ -255,24 +244,23 @@ public class GameServer
                 logger.warning(player.getClass().getSimpleName() + " returned a bid that was null");
 
                 // punish loser
-                punishLoser((_currentPlayer + _players.size() - 1) % _players.size(), _currentPlayer /* loser */);
+                punishLoser((currentPlayer + players.size() - 1) % players.size(), currentPlayer /* loser */);
                 return;
             }
-
-            if (bid != null)
+            else
             {
                 bid.setPlayerNumDice(cup.getNumDice());
                 bid.setPlayerSimpleClassName(player.getClass().getSimpleName());
             }
 
-            // get previously higest bid
-            Bid bidHighest = _rs.getHighestBid();
+            // get previously highest bid
+            Bid bidHighest = rs.getHighestBid();
 
             // add the bid to the round
-            _rs.addNextBid(bid);
+            rs.addNextBid(bid);
 
             // inform each player of the new bid
-            tellBid(_rs);
+            tellBid(rs);
 
             // validate bid
             // bid must outbid previous bid
@@ -284,11 +272,11 @@ public class GameServer
                     logger.warning(player.getClass().getSimpleName() + " returned a bid that is too low");
 
                     // add the roundstate before we punish the loser
-                    _gamestate.add(_rs);
+                    gamestate.add(rs);
 
                     // punish loser
-                    punishLoser((_currentPlayer + _players.size() - 1) % _players.size(), _currentPlayer  /* loser */);
-                    _gamestate.add(_rs);
+                    punishLoser((currentPlayer + players.size() - 1) % players.size(), currentPlayer  /* loser */);
+                    gamestate.add(rs);
                     return;
                 }
             }
@@ -299,40 +287,37 @@ public class GameServer
                 logger.warning("First bid may not be b.s.");
 
                 // add the roundstate before we punish the loser
-                _gamestate.add(_rs);
+                gamestate.add(rs);
 
-                punishLoser((_currentPlayer + _players.size() - 1) % _players.size(), _currentPlayer  /* loser */);
-                _gamestate.add(_rs);
+                punishLoser((currentPlayer + players.size() - 1) % players.size(), currentPlayer  /* loser */);
+                gamestate.add(rs);
                 return;
             }
 
             // increment the player index
-            _currentPlayer = (_currentPlayer + 1) % _rs.getNumPlayers();
+            currentPlayer = (currentPlayer + 1) % rs.getNumPlayers();
 
         }
-        while (bid.isBS() != true);
+        while (!bid.isBS());
 
         // add the roundstate before we punish the loser
-        _gamestate.add(_rs);
+        gamestate.add(rs);
 
         resolveShowdown();
     }
-
 
     /**
      * when one player has bid bs, this is called to resolve who is correct.
      */
     private void resolveShowdown() throws Exception
     {
-        Bid bid = null;
-        int iDefendingIndex = 0;
-        int iChallengingIndex = 0;
-        int iLoserIndex = 0;
-        int iWinnerIndex = 0;
+        Bid bid;
+        int iLoserIndex;
+        int iWinnerIndex;
 
         try
         {
-            bid = _rs.getBid(_rs.getNumBids() - 2);
+            bid = rs.getBid(rs.getNumBids() - 2);
         }
         catch (Exception e)
         {
@@ -340,10 +325,10 @@ public class GameServer
             throw new Exception("Failed to get bid to resolve showdown.", e);
         }
 
-        logger.finest("iCurrentPlayer: " + _currentPlayer);
+        logger.finest("iCurrentPlayer: " + currentPlayer);
 
-        iDefendingIndex = (_currentPlayer + _rs.getNumPlayers() - 2) % _rs.getNumPlayers();
-        iChallengingIndex = (_currentPlayer + _rs.getNumPlayers() - 1) % _rs.getNumPlayers();
+        final var iDefendingIndex = (currentPlayer + rs.getNumPlayers() - 2) % rs.getNumPlayers();
+        final var iChallengingIndex = (currentPlayer + rs.getNumPlayers() - 1) % rs.getNumPlayers();
 
         logger.finest("Defender index: " + iDefendingIndex + " Challenger index: " + iChallengingIndex);
 
@@ -362,7 +347,6 @@ public class GameServer
         punishLoser(iWinnerIndex, iLoserIndex);
     }
 
-
     /**
      * Tell everyone about the outcome of a showdown or an invalid play.
      * Remove a die from the loser.  Adjust the indices as necessary.
@@ -373,38 +357,29 @@ public class GameServer
     private void punishLoser(int iWinnerIndex, int iLoserIndex)
     {
         // allow access to the cups
-        _rs.setShowdownOver();
+        rs.setShowdownOver();
 
         // tell everyone
-        tellOutcome((_players.get(iWinnerIndex)).getClass().getSimpleName(), (_players.get(iLoserIndex)).getClass().getSimpleName());
+        tellOutcome((players.get(iWinnerIndex)).getClass().getSimpleName(), (players.get(iLoserIndex)).getClass().getSimpleName());
 
         // remove a die from the losers cup
-        try
-        {
-            (_playerCups.get(iLoserIndex)).removeDie();
-        }
-        catch (Exception e)
-        {
-            logger.severe("bad cup index");
-            System.exit(-1);
-        }
-        _currentPlayer = (iLoserIndex + 1) % _rs.getNumPlayers();
+        (playerCups.get(iLoserIndex)).removeDie();
+        currentPlayer = (iLoserIndex + 1) % rs.getNumPlayers();
 
         // remove the player and their cup if they have no dice left
-        if ((_playerCups.get(iLoserIndex)).getNumDice() == 0)
+        if ((playerCups.get(iLoserIndex)).getNumDice() == 0)
         {
-            logger.info("goodbye: " + (_players.get(iLoserIndex)).getClass().getSimpleName());
-            _players.remove(iLoserIndex);
-            _playerCups.remove(iLoserIndex);
+            logger.info("goodbye: " + (players.get(iLoserIndex)).getClass().getSimpleName());
+            players.remove(iLoserIndex);
+            playerCups.remove(iLoserIndex);
 
             // should the current player index be adjusted?
-            if (_currentPlayer > iLoserIndex)
+            if (currentPlayer > iLoserIndex)
             {
-                _currentPlayer--;
+                currentPlayer--;
             }
         }
     }
-
 
     /**
      * Based on the properties, instantiate each player's class.
@@ -418,21 +393,19 @@ public class GameServer
     private void loadPlayers()
         throws Exception
     {
-        String sPlayerClassName = null;
-        Class cPlayerClass = null;
-        Player player = null;
+        String sPlayerClassName;
         int iPlayerNum = 0;
 
         logger.finest("loadPlayers() begin");
 
         // check to make sure that the list has been instantiated
-        if (_players == null)
+        if (players == null)
         {
-            _players = new ArrayList<Player>();
+            players = new ArrayList<>();
         }
 
         logger.finest("clear list");
-        _players.clear();
+        players.clear();
 
         // populate the list with each of the player classes
         do
@@ -453,9 +426,9 @@ public class GameServer
             {
                 try
                 {
-                    cPlayerClass = java.lang.Class.forName(sPlayerClassName);
-                    player = (Player) cPlayerClass.newInstance();
-                    _players.add(player);
+                    final var cPlayerClass = java.lang.Class.forName(sPlayerClassName);
+                    final var player = (Player) cPlayerClass.getDeclaredConstructor().newInstance();
+                    players.add(player);
 
                     logger.fine("Added player: " + player.getClass().getSimpleName());
                 }
@@ -471,71 +444,53 @@ public class GameServer
         while (sPlayerClassName != null);
 
         // there must be at least 2 players.
-        if (_players.size() < MIN_NUM_PLAYERS)
+        if (players.size() < MIN_NUM_PLAYERS)
         {
             throw new Exception();
         }
-
-
     }
-
 
     /**
      * create a cup for each player.
      */
     private void makeCups()
-        throws Exception
     {
-        Cup cup = null;
-
         // check to make sure that the list has been instantiated
-        if (_playerCups == null)
+        if (playerCups == null)
         {
-            _playerCups = new ArrayList<Cup>();
+            playerCups = new ArrayList<>();
         }
 
         logger.finest("clear player cups list");
 
         // clear the list
-        _playerCups.clear();
+        playerCups.clear();
 
         // for each loaded player, make a cup
-        int i = _players.size();
+        int i = players.size();
         while (i-- > 0)
         {
-            try
-            {
-                cup = new Cup(Cup.DEFAULT_NUM_DICE, Die.DEFAULT_NUM_SIDES);
-            }
-            catch (Exception e)
-            {
-                //this will never happen since we're using Cup's static variable to initialize it.
-                logger.severe("Could not create a new cup");
-                System.exit(-1);
-            }
-
-            _playerCups.add(cup);
+            final var cup = new Cup(Cup.DEFAULT_NUM_DICE, Die.DEFAULT_NUM_SIDES);
+            playerCups.add(cup);
         }
     }
-
 
     /**
      * shake all of the player's cups
      */
     private void shakeCups()
     {
-        if (_playerCups == null)
+        if (playerCups == null)
         {
             return;
         }
 
         // call shake for each cup
-        for (Cup cup : _playerCups)
+        for (Cup cup : playerCups)
         {
             cup.shake();
         }
     }
-
 
     /**
      * tell all of the players the state of the round
@@ -546,30 +501,18 @@ public class GameServer
      */
     private void tellBid(RoundState rs)
     {
-        if (_players == null)
+        if (players == null)
         {
             return;
         }
 
         // call tellBid for each player
-        for (Player player : _players)
+        for (Player player : players)
         {
-            try
-            {
-                TimeoutSafePlayer tsplayer = new TimeoutSafePlayer(player, _timeoutSeconds);
-                tsplayer.tellBid(rs);
-            }
-            catch (Exception e)
-            {
-                // This should never happen
-                logger.severe("failed to construct a TimeoutSafePlayer");
-                System.exit(-1);
-            }
-
+            final var tsplayer = new TimeoutSafePlayer(player, timeoutSeconds);
+            tsplayer.tellBid(rs);
         }
-
     }
-
 
     /**
      * Informs each player of the outcome of a showdown.
@@ -579,29 +522,26 @@ public class GameServer
      */
     private void tellOutcome(String sWinnerClassName, String sLoserClassName)
     {
-        if (_players == null)
+        if (players == null)
         {
             return;
         }
 
         // call tellOutcome for each player
-        for (Player player : _players)
+        for (Player player : players)
         {
             try
             {
-                TimeoutSafePlayer tsplayer = new TimeoutSafePlayer(player, _timeoutSeconds);
-                tsplayer.tellOutcome(_rs, sWinnerClassName, sLoserClassName);
+                final var tsplayer = new TimeoutSafePlayer(player, timeoutSeconds);
+                tsplayer.tellOutcome(rs, sWinnerClassName, sLoserClassName);
             }
             catch (Exception e)
             {
                 // FIX - this method could propagate the exception
                 logger.severe("failed to construct a TimeoutSafePlayer");
             }
-
-
         }
     }
-
 
     /**
      * A way to find out how many of a type of die you have in all cups.
@@ -613,13 +553,12 @@ public class GameServer
     {
         int iQuantity = 0;
 
-        for (Cup cup : _playerCups)
+        for (Cup cup : playerCups)
         {
             iQuantity += cup.getNumDice(iDots);
         }
         return iQuantity;
     }
-
 
     /**
      * Performs maintenance and initialization of variables in preparation of a new round.
@@ -637,23 +576,22 @@ public class GameServer
         // append the round's roundstate to the GameState
 
         // make a RoundState for the round
-        _rs = new RoundState();
+        rs = new RoundState();
         logger.finest("created roundstate");
 
         // populate the RoundState
         int iIndex = iCurrentPlayer;
-        int iCount = _players.size();
+        int iCount = players.size();
 
         while (iCount-- > 0)
         {
-            logger.finest("adding player to round state " + iIndex + " " + (_players.get(iIndex)).getClass().getSimpleName());
+            logger.finest("adding player to round state " + iIndex + " " + (players.get(iIndex)).getClass().getSimpleName());
 
-            int iNumDice = (_playerCups.get(iIndex)).getNumDice();
-            _rs.addPlayerState((_players.get(iIndex)).getClass().getSimpleName(), iNumDice, new Cup(_playerCups.get(iIndex)));
-            iIndex = (iIndex + 1) % _players.size();
+            int iNumDice = (playerCups.get(iIndex)).getNumDice();
+            rs.addPlayerState((players.get(iIndex)).getClass().getSimpleName(), iNumDice, new Cup(playerCups.get(iIndex)));
+            iIndex = (iIndex + 1) % players.size();
         }
     }
-
 
     /**
      * setup the public static logger object.  Developers should use
@@ -664,13 +602,12 @@ public class GameServer
     {
         logger = Logger.getLogger(GameServer.class.getName());
         FileHandler fh = null;
-        String sLevel = null;
-        Level level = null;
+        Level level;
 
-        // get the property for logging level level
+        // get the property for logging level
         try
         {
-            sLevel = System.getProperty(PROPERTY_DEBUG_LEVEL);
+            final var sLevel = System.getProperty(PROPERTY_DEBUG_LEVEL);
 
             // parse the string level into a Level object
             level = Level.parse(sLevel);
@@ -720,7 +657,7 @@ public class GameServer
         {
             try
             {
-                _timeoutSeconds = Integer.parseInt(timeoutSeconds);
+                this.timeoutSeconds = Integer.parseInt(timeoutSeconds);
             }
             catch (NumberFormatException e)
             {
@@ -733,7 +670,7 @@ public class GameServer
         {
             try
             {
-                _numGames = Integer.parseInt(numGames);
+                this.numGames = Integer.parseInt(numGames);
             }
             catch (NumberFormatException e)
             {
@@ -748,16 +685,16 @@ public class GameServer
     private void saveGameState() throws Exception
     {
         // open file
-        FileOutputStream fos = null;
-        ObjectOutputStream oos = null;
-
-        try
+        try(final var fos = new FileOutputStream(GameServer.GAME_LOG + getFormattedGameNumber() + "." + GameServer.GAME_LOG_EXT);
+            final var oos = new ObjectOutputStream(fos);
+            final var fos2 = new FileWriter(GameServer.GAME_LOG + getFormattedGameNumber() + ".json"))
         {
-            fos = new FileOutputStream(GameServer.GAME_LOG + getFormattedGameNumber() + "." + GameServer.GAME_LOG_EXT);
+            oos.writeObject(gamestate);
 
-            oos = new ObjectOutputStream(fos);
+            ObjectMapper mapper = new ObjectMapper();
+            String s = mapper.writeValueAsString(gamestate);
 
-            oos.writeObject(_gamestate);
+            fos2.write(s);
         }
         catch (FileNotFoundException fnfe)
         {
@@ -773,9 +710,6 @@ public class GameServer
 
     private String getFormattedGameNumber()
     {
-        StringBuilder paddedGameNumber = new StringBuilder();
-        Formatter logfileFormatter = new Formatter(paddedGameNumber, Locale.US);
-        logfileFormatter.format("%05d", _currentGameNumber);
-        return paddedGameNumber.toString();
+        return String.format("%05d", currentGameNumber);
     }
 }

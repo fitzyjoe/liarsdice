@@ -1,8 +1,11 @@
 package com.shuttersky.liarsdice.players;
 
-import com.shuttersky.liarsdice.*;
+import com.shuttersky.liarsdice.Bid;
+import com.shuttersky.liarsdice.Cup;
+import com.shuttersky.liarsdice.GameServer;
+import com.shuttersky.liarsdice.Player;
+import com.shuttersky.liarsdice.RoundState;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 public class PlayerTruthful implements Player
@@ -16,11 +19,9 @@ public class PlayerTruthful implements Player
     {
         GameServer.logger.entering("PlayerTruthful", "getBid");
 
-        Bid bid = null;
-        Bid bidHighest = null;
-        ArrayList<Bid> bids = cup.getSortedTrueBids();
-
-        bidHighest = rs.getHighestBid();
+        Bid bid;
+        final var bids = cup.getSortedTrueBids();
+        final var bidHighest = rs.getHighestBid();
 
         GameServer.logger.finest("Highest bid: " + bidHighest);
 
@@ -31,7 +32,7 @@ public class PlayerTruthful implements Player
         }
 
         Iterator<Bid> iterBids = bids.iterator();
-        if (iterBids.hasNext() == false)
+        if (!iterBids.hasNext())
         {
             GameServer.logger.finest("call to getSortedTrueBids returned null");
             System.exit(-1);

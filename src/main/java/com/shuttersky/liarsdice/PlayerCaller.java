@@ -1,4 +1,3 @@
-
 package com.shuttersky.liarsdice;
 
 /**
@@ -11,17 +10,15 @@ package com.shuttersky.liarsdice;
  */
 class PlayerCaller implements java.lang.Runnable
 {
-    private enum Mode
-    {UNKNOWN, GETBID, TELLBID, TELLOUTCOME}
+    private enum Mode {UNKNOWN, GETBID, TELLBID, TELLOUTCOME}
 
-    private Player _player;
-    private Mode _mode;
-    private Cup _cup;
-    private RoundState _rs;
-    private String _winnerClassName;
-    private String _loserClassName;
-    private Bid _bid;
-
+    private final Player player;
+    private Mode mode;
+    private Cup cup;
+    private RoundState rs;
+    private String winnerClassName;
+    private String loserClassName;
+    private Bid bid;
 
     /**
      * Constructor.
@@ -30,10 +27,9 @@ class PlayerCaller implements java.lang.Runnable
      */
     PlayerCaller(Player player)
     {
-        _player = player;
+        this.player = player;
         reset();
     }
-
 
     /**
      * run() determines which method to call on the player, calls it, then sets any
@@ -52,20 +48,16 @@ class PlayerCaller implements java.lang.Runnable
     public void run()
     {
         // determine which method to run
-        switch (_mode)
+        switch (mode)
         {
-            case GETBID:
-                _bid = null;
-                _bid = _player.getBid(_rs, _cup);
-                break;
-            case TELLBID:
-                _player.tellBid(_rs);
-                break;
-            case TELLOUTCOME:
-                _player.tellOutcome(_rs, _winnerClassName, _loserClassName);
-                break;
-            default:
-                break;
+            case GETBID -> {
+                bid = null;
+                bid = player.getBid(rs, cup);
+            }
+            case TELLBID -> player.tellBid(rs);
+            case TELLOUTCOME -> player.tellOutcome(rs, winnerClassName, loserClassName);
+            default -> {
+            }
         }
     }
 
@@ -79,9 +71,9 @@ class PlayerCaller implements java.lang.Runnable
     protected void setModeGetBid(RoundState rs, Cup cup)
     {
         reset();
-        _mode = Mode.GETBID;
-        _cup = cup;
-        _rs = rs;
+        mode = Mode.GETBID;
+        this.cup = cup;
+        this.rs = rs;
     }
 
     /**
@@ -93,8 +85,8 @@ class PlayerCaller implements java.lang.Runnable
     protected void setModeTellBid(RoundState rs)
     {
         reset();
-        _mode = Mode.TELLBID;
-        _rs = rs;
+        mode = Mode.TELLBID;
+        this.rs = rs;
     }
 
     /**
@@ -108,10 +100,10 @@ class PlayerCaller implements java.lang.Runnable
     protected void setModeTellOutcome(RoundState rs, String winnerClassName, String loserClassName)
     {
         reset();
-        _mode = Mode.TELLOUTCOME;
-        _rs = rs;
-        _winnerClassName = winnerClassName;
-        _loserClassName = loserClassName;
+        mode = Mode.TELLOUTCOME;
+        this.rs = rs;
+        this.winnerClassName = winnerClassName;
+        this.loserClassName = loserClassName;
     }
 
     /**
@@ -127,7 +119,7 @@ class PlayerCaller implements java.lang.Runnable
      */
     protected Bid getBid()
     {
-        return _bid;
+        return bid;
     }
 
     /**
@@ -136,11 +128,11 @@ class PlayerCaller implements java.lang.Runnable
      */
     private void reset()
     {
-        _mode = Mode.UNKNOWN;
-        _cup = null;
-        _rs = null;
-        _winnerClassName = null;
-        _loserClassName = null;
-        _bid = null;
+        mode = Mode.UNKNOWN;
+        cup = null;
+        rs = null;
+        winnerClassName = null;
+        loserClassName = null;
+        bid = null;
     }
 }

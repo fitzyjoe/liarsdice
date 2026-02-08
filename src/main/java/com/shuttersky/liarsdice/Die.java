@@ -1,4 +1,3 @@
-
 package com.shuttersky.liarsdice;
 
 /**
@@ -30,45 +29,40 @@ public class Die implements java.io.Serializable, Comparable<Die>
      * Member variables for the number of sides on a die.
      * and the number of dots on the indicated side
      */
-    private int _sides;
-    private int _dots;
-
+    private final int sides;
+    private int dots;
 
     /**
      * constructor.  This will use the default number of sides.
      */
     public Die()
     {
-        this._sides = DEFAULT_NUM_SIDES;
+        this.sides = DEFAULT_NUM_SIDES;
         roll();
     }
-
 
     /**
      * constructor.  This constructor allows a variable number of sides.
      *
-     * @param iSides int representing the number of sides that the die
-     *               should have.
-     * @throws java.lang.Exception
+     * @param sides int representing the number of sides that the die
+     *              should have.  It must be larger than <code>MIN_SIDES</code>
      */
-    public Die(int iSides)
-        throws Exception
+    public Die(int sides)
     {
-        if (iSides < MIN_SIDES)
+        if (sides < MIN_SIDES)
         {
-            throw new Exception("Die must have at least 2 sides");
+            throw new RuntimeException("Die must have at least 2 sides");
         }
 
-        this._sides = iSides;
+        this.sides = sides;
         roll();
     }
 
     protected Die(Die die)
     {
-        this._dots = die._dots;
-        this._sides = die._sides;
+        this.dots = die.dots;
+        this.sides = die.sides;
     }
-
 
     /**
      * this rolls the dice and may assign a new number to dots.
@@ -79,19 +73,18 @@ public class Die implements java.io.Serializable, Comparable<Die>
     protected void roll()
     {
         double d = java.lang.Math.random();
-        _dots = (int) (d * _sides) + 1;
+        dots = (int) (d * sides) + 1;
     }
 
     /**
      * This allows the gameServer to copy dice objects.
      *
-     * @param dots
+     * @param dots the number of dots on a die
      */
     protected void setDots(int dots)
     {
-        _dots = dots;
+        this.dots = dots;
     }
-
 
     /**
      * returns the number of dots on the selected face.
@@ -100,9 +93,8 @@ public class Die implements java.io.Serializable, Comparable<Die>
      */
     public int getDots()
     {
-        return _dots;
+        return dots;
     }
-
 
     /**
      * returns the number of sides on a die
@@ -111,25 +103,12 @@ public class Die implements java.io.Serializable, Comparable<Die>
      */
     public int getSides()
     {
-        return _sides;
+        return sides;
     }
 
+    @Override
     public int compareTo(Die die)
-        throws ClassCastException
     {
-        if (_dots < die.getDots())
-        {
-            return -1;
-        }
-        else if (_dots > die.getDots())
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
+        return Integer.compare(dots, die.getDots());
     }
-
-
 }

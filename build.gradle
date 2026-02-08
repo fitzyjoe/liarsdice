@@ -16,6 +16,8 @@ repositories {
 
 dependencies {
     implementation group: 'org.swinglabs', name: 'swing-layout', version: '1.0.3'
+    implementation group: 'com.intellij', name: 'forms_rt', version: '7.0.3'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.4'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
@@ -25,7 +27,7 @@ test {
     useJUnitPlatform()
 }
 
-task(runGame, dependsOn: 'classes', type: JavaExec) {
+task(runGameInteractive, dependsOn: 'classes', type: JavaExec) {
     mainClass = 'com.shuttersky.liarsdice.GameServer'
     classpath = sourceSets.main.runtimeClasspath
     systemProperty "player0", "com.shuttersky.liarsdice.players.PlayerTruthful"
@@ -33,10 +35,31 @@ task(runGame, dependsOn: 'classes', type: JavaExec) {
     systemProperty "timeout", 30
 }
 
-task(viewGame, dependsOn: 'classes', type: JavaExec) {
-    mainClass = 'com.shuttersky.liarsdice.GameViewer'
+task(runGame, dependsOn: 'classes', type: JavaExec) {
+    mainClass = 'com.shuttersky.liarsdice.GameServer'
     classpath = sourceSets.main.runtimeClasspath
     systemProperty "player0", "com.shuttersky.liarsdice.players.PlayerTruthful"
-    systemProperty "player1", "com.shuttersky.liarsdice.players.PlayerSwing"
+    systemProperty "player1", "com.shuttersky.liarsdice.players.PlayerTruthfulJoefitz"
+    systemProperty "player2", "com.shuttersky.liarsdice.players.PlayerBluffer"
+    systemProperty "timeout", 30
+}
+
+//     systemProperty "player2", "com.shuttersky.liarsdice.players.PlayerBluffer"
+
+task(viewGame, dependsOn: 'classes', type: JavaExec) {
+    mainClass = 'com.shuttersky.liarsdice.experimental.GameViewer2'
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty "timeout", 30
+}
+
+task(experimentalViewGame, dependsOn: 'classes', type: JavaExec) {
+    mainClass = 'com.shuttersky.liarsdice.experimental.GameViewer2'
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty "timeout", 30
+}
+
+task(gameViewerTester, dependsOn: 'classes', type: JavaExec) {
+    mainClass = 'com.shuttersky.liarsdice.GameViewerTester'
+    classpath = sourceSets.main.runtimeClasspath
     systemProperty "timeout", 30
 }

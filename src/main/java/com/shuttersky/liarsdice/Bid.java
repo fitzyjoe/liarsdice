@@ -1,4 +1,3 @@
-
 package com.shuttersky.liarsdice;
 
 /**
@@ -22,16 +21,15 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
     private static final int MIN_DOTS = 1;
     private static final int MAX_DOTS = 6;
 
-
     /**
      * member variables holding the state of a bid.
      */
-    private int _quantity;
-    private int _dots;
-    private boolean _bBS = false;
-    private String _playerSimpleClassName = null;
-    private int _playerNumDice = 0;
-    private String _message = null;
+    private int quantity;
+    private int dots;
+    private boolean bBS;
+    private String playerSimpleClassName = null;
+    private int playerNumDice = 0;
+    private String message = null;
 
     /**
      * Copy constructor
@@ -40,14 +38,13 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      */
     protected Bid(Bid bid)
     {
-        _quantity = bid._quantity;
-        _dots = bid._dots;
-        _bBS = bid._bBS;
-        _playerSimpleClassName = bid._playerSimpleClassName;
-        _playerNumDice = bid._playerNumDice;
-        _message = bid._message;
+        quantity = bid.quantity;
+        dots = bid.dots;
+        bBS = bid.bBS;
+        playerSimpleClassName = bid.playerSimpleClassName;
+        playerNumDice = bid.playerNumDice;
+        message = bid.message;
     }
-
 
     /**
      * constructor.
@@ -55,32 +52,26 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      * @param quantity int representing the quantity of dice bid.
      * @param dots     int representing the number of dots on one side of a die in the bid.
      * @param message  String for the message (trash-talk) to show in the game viewer.
-     * @throws Exception if the bid is out of range.
      */
     public Bid(int quantity, int dots, String message)
-        throws Exception
     {
         // set the values for the bid
         setBid(quantity, dots);
-        _message = message;
-        _bBS = false;
+        this.message = message;
+        bBS = false;
     }
-
 
     /**
      * constructor.
      *
      * @param quantity int representing the quantity of dice bid.
      * @param dots     int representing the number of dots on one side of a die in the bid.
-     * @throws Exception if the bid is out of range.
      */
     public Bid(int quantity, int dots)
-        throws Exception
     {
         setBid(quantity, dots);
-        _bBS = false;
+        bBS = false;
     }
-
 
     /**
      * constructor for creating a b.s. bid.
@@ -89,39 +80,19 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      */
     public Bid(String message)
     {
-        try
-        {
-            setBid(Bid.MIN_QUANTITY, Bid.MIN_DOTS);
-        }
-        catch (Exception e)
-        {
-            // no need to handle exception since we're using bounds constants
-            // to initialize the Bid
-        }
-
-        _message = message;
-        _bBS = true;
+        setBid(Bid.MIN_QUANTITY, Bid.MIN_DOTS);
+        this.message = message;
+        bBS = true;
     }
-
 
     /**
      * constructor for creating a b.s. bid.
      */
     public Bid()
     {
-        try
-        {
-            setBid(Bid.MIN_QUANTITY, Bid.MIN_DOTS);
-        }
-        catch (Exception e)
-        {
-            // no need to handle exception since we're using bounds constants
-            // to initialize the Bid
-        }
-
-        _bBS = true;
+        setBid(Bid.MIN_QUANTITY, Bid.MIN_DOTS);
+        bBS = true;
     }
-
 
     /**
      * Get the message (trash-talk) for a bid.
@@ -130,9 +101,8 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      */
     public String getMessage()
     {
-        return _message;
+        return message;
     }
-
 
     /**
      * determine if a bid is b.s.
@@ -142,9 +112,8 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      */
     public boolean isBS()
     {
-        return _bBS;
+        return bBS;
     }
-
 
     /**
      * get the quantity of dice in the bid.
@@ -154,14 +123,13 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      */
     public int getNumDice()
     {
-        if (_bBS == true)
+        if (bBS)
         {
             return -1;
         }
 
-        return _quantity;
+        return quantity;
     }
-
 
     /**
      * get the number of dots on one die in the bid.
@@ -171,14 +139,13 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      */
     public int getDots()
     {
-        if (_bBS == true)
+        if (bBS)
         {
             return -1;
         }
 
-        return _dots;
+        return dots;
     }
-
 
     /**
      * Get the simple class name of the player who placed this bid.  This is set by the GameServer
@@ -188,9 +155,8 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      */
     public String getPlayerSimpleClassName()
     {
-        return _playerSimpleClassName;
+        return playerSimpleClassName;
     }
-
 
     /**
      * Get the number of dice that are being held by the player who placed this bid.
@@ -201,9 +167,8 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      */
     public int getPlayerNumDice()
     {
-        return _playerNumDice;
+        return playerNumDice;
     }
-
 
     /**
      * This compares two bids.
@@ -212,10 +177,9 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
      * @return <code>-1</code> if this is less than bid.
      * <code>1</code> if this is greater than bid. Or if the bid is null.
      * <code>0</code> if the bids are equal.
-     * @throws ClassCastException if obid is not a bid
      */
+    @Override
     public int compareTo(Bid bid)
-        throws ClassCastException
     {
         if (bid == null)
         {
@@ -242,14 +206,13 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
             }
         }
 
-
         // compare quantities
-        if (_quantity > bid.getNumDice())
+        if (quantity > bid.getNumDice())
         {
             // this has larger quantity than bid
             return 1;
         }
-        else if (_quantity < bid.getNumDice())
+        else if (quantity < bid.getNumDice())
         {
             // this has less quantity than bid
             return -1;
@@ -258,122 +221,97 @@ public class Bid implements Comparable<Bid>, java.io.Serializable
         {
             // both bids have the same quantity
             // now check the dots
-            if (_dots > bid.getDots())
-            {
-                // this has more dots than bid
-                return 1;
-            }
-            else if (_dots < bid.getDots())
-            {
-                // this has less dots than bid
-                return -1;
-            }
-            else
-            {
-                return 0;
-            }
+            return Integer.compare(dots, bid.getDots());
         }
     }
-
 
     /**
      * A String representation of a bid: Quantity + "x" + Dots + "'s"
      *
      * @return a String representation of a bid.
      */
+    @Override
     public String toString()
     {
-        String s = null;
+        String s;
 
-        if (isBS() == true)
+        if (isBS())
         {
             s = "b.s.!";
         }
         else
         {
-            s = String.valueOf(_quantity) + "x" + String.valueOf(_dots) + "'s";
+            s = quantity + "x" + dots + "'s";
         }
 
         return s;
     }
 
-
     /**
      * The game server sets the player class name as a convenience for players
      *
-     * @param playerSimpleClassName
+     * @param playerSimpleClassName the class name of a player
      */
     protected void setPlayerSimpleClassName(String playerSimpleClassName)
     {
-        _playerSimpleClassName = playerSimpleClassName;
+        this.playerSimpleClassName = playerSimpleClassName;
     }
-
 
     /**
      * The game server sets the player number of dice as a convenience for players
      *
-     * @param playerNumDice
+     * @param playerNumDice int number of dice for a player associated with this bid
      */
     protected void setPlayerNumDice(int playerNumDice)
     {
-        _playerNumDice = playerNumDice;
+        this.playerNumDice = playerNumDice;
     }
-
 
     /**
      * set a bid to the given value.
      *
      * @param quantity int representing the quantity of dice bid.
      * @param dots     int representing the number of dots on one side of a die in the bid.
-     * @throws Exception if the bid is out of range.
      */
     private void setBid(int quantity, int dots)
-        throws Exception
     {
         setQuantity(quantity);
         setDots(dots);
-
-        _bBS = false;
+        bBS = false;
     }
-
 
     /**
      * set the quantity of dice in the bid.
      *
      * @param quantity int representing the number of dice in the bid.
-     * @throws Exception if the quantity is out of range
      */
     private void setQuantity(int quantity)
-        throws Exception
     {
         // validate quantity
         if (quantity < MIN_QUANTITY)
         {
-            throw new Exception("Attempted to set the quantity to: " + quantity + " which is lower than the minimum: " + MIN_QUANTITY);
+            throw new RuntimeException("Attempted to set the quantity to: " + quantity + " which is lower than the minimum: " + MIN_QUANTITY);
         }
 
         // set quantity
-        this._quantity = quantity;
+        this.quantity = quantity;
     }
 
-
     /**
-     * set the bid for the number of dots on one side of the dice
+     * set the bid for the number of dots on one side of the dice.
+     * The dots must be between <code>MIN_DOTS</code> and <code>MAX_DOTS</code>
      *
      * @param dots int representing the number of dots on one side of the dice in the bid.
-     * @throws Exception if the dots are out of range
      */
     private void setDots(int dots)
-        throws Exception
     {
         // validate dots
         if (dots < MIN_DOTS || dots > MAX_DOTS)
         {
-            throw new Exception("Dots " + dots + " is out of range");
+            throw new RuntimeException("Dots " + dots + " is out of range");
         }
 
         // set dots
-        this._dots = dots;
+        this.dots = dots;
     }
-
 }

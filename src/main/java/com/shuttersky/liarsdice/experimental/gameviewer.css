@@ -1,0 +1,11 @@
+.player {
+    padding: 5px;
+    margin-top: 5px;
+    border: solid;
+    border-color: #222222;
+    width: 400px;
+}
+
+.die {
+    padding: 3px;
+}
